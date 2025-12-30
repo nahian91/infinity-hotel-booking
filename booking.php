@@ -88,8 +88,7 @@ function ihb_booking_controller() {
         <div class="ihb-view-header">
             <div class="ihb-view-title">
                 <div style="display:flex; align-items:center; gap:12px; margin-bottom:5px;">
-                    <h2>Reservations</h2>
-                    <span class="ihb-status-indicator">Live Ledger</span>
+                    <h2>Bookings</h2>
                 </div>
                 <p>Manage front-desk operations, check-ins, and guest folios.</p>
             </div>
@@ -98,13 +97,13 @@ function ihb_booking_controller() {
         <div class="ihb-nav-container">
             <a href="?page=infinity-hotel&tab=all_bookings" 
                class="ihb-nav-item <?php echo ($tab == 'all_bookings' ? 'active' : ''); ?>">
-                <span class="dashicons dashicons-calendar-alt"></span> Master Ledger
+                <span class="dashicons dashicons-calendar-alt"></span> Bookings
             </a>
             
             <a href="?page=infinity-hotel&tab=add_booking" 
                class="ihb-nav-item <?php echo ($tab == 'add_booking' || $tab == 'edit_booking' ? 'active' : ''); ?>">
                 <span class="dashicons dashicons-plus"></span> 
-                <?php echo ($tab == 'edit_booking' ? 'Edit Booking' : 'New Reservation'); ?>
+                <?php echo ($tab == 'edit_booking' ? 'Edit Booking' : 'New Booking'); ?>
             </a>
 
             <?php if($tab == 'view_booking'): ?>

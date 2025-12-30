@@ -16,7 +16,7 @@ $method   = get_post_meta($id, '_ihb_pay_method', true) ?: 'cash';
 $mfs_trx  = get_post_meta($id, '_ihb_mfs_trx', true);
 $mfs_acc  = get_post_meta($id, '_ihb_mfs_phone', true);
 
-// Room Details (With Safety Fallbacks)
+// Room Details
 $room_exists = get_post_status($rid);
 $room_title  = $room_exists ? get_the_title($rid) : 'Deleted Room';
 $room_price  = get_post_meta($rid, '_ihb_price', true) ?: 0;
@@ -34,156 +34,160 @@ $total_bill = get_post_meta($id, '_ihb_total_price', true) ?: ($nights * $room_p
 ?>
 
 <style>
-    :root { --gold: #c19b76; --slate: #0f172a; --border: #e2e8f0; }
+    :root { --ihb-gold: #c19b76; --ihb-dark: #0f172a; --ihb-slate: #64748b; --ihb-border: #f1f5f9; }
     
-    .ihb-view-wrapper { display: grid; grid-template-columns: 1fr 380px; gap: 30px; margin-top: 20px; }
-    .ihb-folio-card { background: #fff; border-radius: 16px; border: 1px solid var(--border); overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.02); }
+    .ihb-folio-container { max-width: 1200px; margin: 30px auto; padding: 0 20px; font-family: 'Inter', sans-serif; }
     
-    /* Folio Header */
-    .folio-header { background: var(--slate); color: #fff; padding: 45px; display: flex; justify-content: space-between; align-items: center; }
-    .folio-id { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; opacity: 0.6; margin-bottom: 8px; font-weight: 700; }
-    .folio-name { font-size: 32px; font-weight: 900; margin: 0; line-height: 1.1; letter-spacing: -1px; }
+    /* Top Navigation */
+    .ihb-nav-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+    .ihb-btn-back { text-decoration: none; color: var(--ihb-slate); font-weight: 600; font-size: 13px; display: flex; align-items: center; }
     
-    .folio-body { padding: 40px; }
-    .folio-section-title { font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid #f8fafc; padding-bottom: 12px; margin: 40px 0 25px; }
+    /* Layout */
+    .ihb-folio-grid { display: grid; grid-template-columns: 1fr 360px; gap: 40px; }
     
-    /* Guest Loop Styling */
-    .guest-folio-item { background: #f8fafc; border-radius: 12px; padding: 25px; margin-bottom: 20px; border: 1px solid var(--border); }
-    .guest-folio-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 20px; }
-    .data-box label { display: block; font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 5px; }
-    .data-box span { display: block; font-size: 14px; font-weight: 700; color: var(--slate); }
+    /* Folio Main Card */
+    .ihb-main-folio { background: #fff; border-radius: 24px; border: 1px solid var(--ihb-border); box-shadow: 0 10px 40px rgba(0,0,0,0.03); overflow: hidden; }
+    
+    /* Header Aesthetic */
+    .folio-hero { padding: 60px; background: #fafafa; border-bottom: 1px solid var(--ihb-border); position: relative; }
+    .folio-hero::after { content: 'OFFICIAL RECORD'; position: absolute; top: 40px; right: -25px; transform: rotate(45deg); background: var(--ihb-gold); color: #fff; font-size: 9px; font-weight: 800; padding: 5px 40px; letter-spacing: 1px; }
+    
+    .folio-id-tag { font-size: 11px; font-weight: 800; color: var(--ihb-gold); letter-spacing: 2px; margin-bottom: 10px; display: block; }
+    .folio-title { font-size: 42px; font-weight: 800; color: var(--ihb-dark); margin: 0; letter-spacing: -1.5px; }
+    .room-indicator { margin-top: 15px; display: flex; align-items: center; gap: 15px; }
+    .room-no-circle { background: var(--ihb-dark); color: #fff; padding: 6px 16px; border-radius: 100px; font-weight: 800; font-size: 14px; }
+    
+    .folio-content { padding: 60px; }
+    .section-label { font-size: 10px; font-weight: 800; color: #cbd5e1; text-transform: uppercase; letter-spacing: 2px; display: block; margin-bottom: 30px; border-bottom: 1px solid var(--ihb-border); padding-bottom: 10px; }
 
-    /* Documents */
-    .doc-preview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-    .doc-item { background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 12px; text-align: center; }
-    .doc-item img { width: 100%; height: 160px; object-fit: cover; border-radius: 6px; margin-bottom: 10px; cursor: pointer; transition: 0.2s; }
-    .doc-item img:hover { transform: scale(1.02); }
-    .doc-item label { font-size: 10px; font-weight: 800; color: var(--slate); }
-
-    /* Sidebar Summary */
-    .sidebar-inner { position: sticky; top: 30px; }
-    .summary-card { background: #fff; padding: 30px; border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
-    .bill-row { display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px dashed #e2e8f0; font-size: 14px; color: #64748b; }
-    .bill-total { display: flex; justify-content: space-between; padding-top: 25px; font-size: 32px; font-weight: 900; color: var(--slate); letter-spacing: -1px; }
+    /* Guest Profile System */
+    .guest-profile { margin-bottom: 40px; display: grid; grid-template-columns: 140px 1fr; gap: 30px; padding-bottom: 40px; border-bottom: 1px dashed var(--ihb-border); }
+    .guest-avatar-wrap { text-align: center; }
+    .guest-avatar { width: 120px; height: 120px; border-radius: 20px; object-fit: cover; border: 4px solid #fff; box-shadow: 0 10px 20px rgba(0,0,0,0.05); background: #f8fafc; margin-bottom: 10px; }
     
-    /* Print Rules */
+    .guest-info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+    .info-cell label { font-size: 10px; font-weight: 700; color: var(--ihb-slate); text-transform: uppercase; display: block; margin-bottom: 4px; }
+    .info-cell span { font-size: 15px; font-weight: 600; color: var(--ihb-dark); }
+
+    /* Identity Docs Hover Effect */
+    .id-doc-link { display: inline-flex; align-items: center; gap: 8px; margin-top: 15px; font-size: 12px; font-weight: 700; color: var(--ihb-gold); text-decoration: none; padding: 6px 12px; background: rgba(193, 155, 118, 0.08); border-radius: 8px; transition: 0.2s; }
+    .id-doc-link:hover { background: var(--ihb-gold); color: #fff; }
+
+    /* Sidebar Summary Style */
+    .summary-box { background: #fff; border-radius: 24px; padding: 40px; border: 1px solid var(--ihb-border); position: sticky; top: 30px; }
+    .summary-title { font-size: 18px; font-weight: 800; color: var(--ihb-dark); margin-bottom: 25px; }
+    .sum-row { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 14px; color: var(--ihb-slate); }
+    .sum-row.total { margin-top: 25px; padding-top: 25px; border-top: 2px solid var(--ihb-dark); color: var(--ihb-dark); font-weight: 900; font-size: 28px; }
+    
+    .payment-status-badge { background: #ecfdf5; color: #10b981; padding: 15px; border-radius: 16px; margin-top: 30px; display: flex; align-items: center; gap: 12px; font-size: 13px; font-weight: 700; }
+
     @media print {
-        #adminmenuback, #adminmenuwrap, .ihb-header, #footer-upgrade, #wpadminbar, .ihb-btn-gold, .sidebar-inner { display: none !important; }
-        .ihb-view-wrapper { grid-template-columns: 1fr; margin: 0; padding: 0; }
-        .ihb-folio-card { border: none; box-shadow: none; }
-        .folio-header { background: #f1f5f9 !important; color: #000 !important; border-bottom: 3px solid #000; padding: 20px; }
-        .folio-body { padding: 20px 0; }
-        .guest-folio-item { border: 1px solid #eee; background: #fff; page-break-inside: avoid; }
+        .ihb-nav-top, .summary-box, .id-doc-link, #adminmenuback, #adminmenuwrap { display: none !important; }
+        .ihb-folio-grid { grid-template-columns: 1fr; }
+        .ihb-main-folio { border: none; }
+        .folio-hero { padding: 30px; background: #fff; border-bottom: 2px solid #000; }
     }
 </style>
 
-<div class="ihb-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
-    <div>
-        <h2 style="font-weight:900; margin:0;">Booking Folio</h2>
-        <p style="color:#64748b; margin:0;">Official Guest Statement & Identity Records</p>
+<div class="ihb-folio-container">
+    <div class="ihb-nav-top">
+        <a href="?page=infinity-hotel&tab=all_bookings" class="ihb-btn-back">
+            <span class="dashicons dashicons-arrow-left-alt2" style="margin-right:8px;"></span> Back to Ledger
+        </a>
+        <button onclick="window.print()" class="button button-large">Print Statement</button>
     </div>
-    <div style="display:flex; gap:12px;">
-        <button onclick="window.print()" class="ihb-btn-gold" style="background:var(--slate); border:none; cursor:pointer;">
-            <span class="dashicons dashicons-printer" style="margin-top:4px;"></span> Print Folio
-        </button>
-        <a href="?page=infinity-hotel&tab=all_bookings" class="ihb-btn-gold" style="text-decoration:none; background:#fff; color:var(--slate); border:1px solid var(--border);">Back to Ledger</a>
-    </div>
-</div>
 
-<div class="ihb-view-wrapper">
-    <div class="ihb-folio-card">
-        <div class="folio-header">
-            <div>
-                <div class="folio-id">Reservation #<?= $id ?></div>
-                <h1 class="folio-name"><?= get_the_title($id) ?></h1>
-            </div>
-            <div style="text-align:right;">
-                <div style="font-weight:900; font-size:24px; color:var(--gold);">ROOM <?= $room_title ?></div>
-                <div style="font-size:11px; opacity:0.8; font-weight:700; letter-spacing:1px;"><?= strtoupper($room_type) ?> CATEGORY</div>
-            </div>
-        </div>
-
-        <div class="folio-body">
-            <div class="folio-section-title">Registered Guests (<?= count($guests) ?>)</div>
-            
-            <?php foreach($guests as $index => $g): ?>
-                <div class="guest-folio-item">
-                    <div style="font-weight:900; color:var(--gold); font-size:11px; margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:10px; display:flex; justify-content:space-between;">
-                        <span>GUEST #<?= $index + 1 ?> PROFILE</span>
-                        <span><?= strtoupper($g['id_type']) ?> Verified</span>
-                    </div>
-                    
-                    <div class="guest-folio-grid">
-                        <div class="data-box"><label>Full Name</label><span><?= esc_html($g['name']) ?></span></div>
-                        <div class="data-box"><label>Phone</label><span><?= esc_html($g['phone'] ?: 'N/A') ?></span></div>
-                        <div class="data-box"><label>Email</label><span><?= esc_html($g['email'] ?: 'N/A') ?></span></div>
-                    </div>
-
-                    <div class="guest-folio-grid">
-                        <div class="data-box"><label>Gender</label><span><?= esc_html($g['gender']) ?></span></div>
-                        <div class="data-box"><label>Age</label><span><?= esc_html($g['age']) ?> Years</span></div>
-                        <div class="data-box"><label>Home Address</label><span><?= esc_html($g['address']) ?></span></div>
-                    </div>
-
-                    <div class="doc-preview-grid">
-                        <div class="doc-item">
-                            <?php if(!empty($g['photo'])): ?> 
-                                <img src="<?= wp_get_attachment_url($g['photo']) ?>" onclick="window.open(this.src)"> 
-                            <?php else: ?> 
-                                <div style="height:160px; background:#f1f5f9; display:flex; align-items:center; justify-content:center; color:#cbd5e1;"><span class="dashicons dashicons-admin-users" style="font-size:40px; width:40px; height:40px;"></span></div> 
-                            <?php endif; ?>
-                            <label>GUEST PHOTO</label>
-                        </div>
-                        <div class="doc-item">
-                            <?php if(!empty($g['nid'])): ?> 
-                                <img src="<?= wp_get_attachment_url($g['nid']) ?>" onclick="window.open(this.src)"> 
-                            <?php else: ?> 
-                                <div style="height:160px; background:#f1f5f9; display:flex; align-items:center; justify-content:center; color:#cbd5e1;"><span class="dashicons dashicons-id-alt" style="font-size:40px; width:40px; height:40px;"></span></div> 
-                            <?php endif; ?>
-                            <label>ID DOCUMENT</label>
-                        </div>
-                    </div>
+    <div class="ihb-folio-grid">
+        <div class="ihb-main-folio">
+            <div class="folio-hero">
+                <span class="folio-id-tag">RESERVATION #<?= $id ?></span>
+                <h1 class="folio-title"><?= get_the_title($id) ?></h1>
+                <div class="room-indicator">
+                    <div class="room-no-circle">ROOM <?= $room_title ?></div>
+                    <span style="font-size:12px; font-weight:700; color:var(--ihb-slate);"><?= strtoupper($room_type) ?> SUITE</span>
                 </div>
-            <?php endforeach; ?>
-
-            <div class="folio-section-title">Stay Details</div>
-            <div class="guest-folio-grid">
-                <div class="data-box"><label>Check-In Date</label><span><?= date('D, M j, Y', strtotime($checkin)) ?></span></div>
-                <div class="data-box"><label>Check-Out Date</label><span><?= date('D, M j, Y', strtotime($checkout)) ?></span></div>
-                <div class="data-box"><label>Total Duration</label><span><?= $nights ?> Night(s) Stay</span></div>
-            </div>
-        </div>
-    </div>
-
-    <div class="sidebar-inner">
-        <div class="summary-card">
-            <div class="folio-section-title" style="margin-top:0; border-color:var(--gold);">Invoice Summary</div>
-            
-            <div class="bill-row"><span>Room Rate / Night</span><strong>৳<?= number_format($room_price) ?></strong></div>
-            <div class="bill-row"><span>Total Nights</span><strong>x <?= $nights ?></strong></div>
-            <div class="bill-row" style="border:none;"><span>Occupancy</span><strong><?= count($guests) ?> Pax</strong></div>
-            
-            <div class="bill-total">
-                <span style="font-size:14px; font-weight:700; color:#94a3b8; align-self:center;">TOTAL PAID</span>
-                <span>৳<?= number_format($total_bill) ?></span>
             </div>
 
-            <div style="margin-top:35px; padding:20px; background:#f8fafc; border-radius:12px; border:1px solid #eee;">
-                <label class="data-box"><label>Settlement Method</label>
-                <div style="display:flex; align-items:center; gap:8px; margin-top:5px;">
-                    <span class="dashicons dashicons-yes-alt" style="color:#10b981;"></span>
-                    <span style="font-weight:800; color:var(--slate); text-transform:uppercase;"><?= esc_html($method) ?></span>
-                </div>
+            <div class="folio-content">
+                <span class="section-label">Registered Guest Details</span>
                 
+                <?php foreach($guests as $g): ?>
+                    <div class="guest-profile">
+                        <div class="guest-avatar-wrap">
+                            <?php 
+                                $photo_url = !empty($g['photo']) ? wp_get_attachment_url($g['photo']) : 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+                            ?>
+                            <img src="<?= $photo_url ?>" class="guest-avatar">
+                            <span style="font-size:10px; font-weight:800; color:var(--ihb-gold);"><?= strtoupper($g['id_type']) ?></span>
+                        </div>
+                        
+                        <div class="guest-info-body">
+                            <div class="guest-info-grid">
+                                <div class="info-cell"><label>Legal Name</label><span><?= esc_html($g['name']) ?></span></div>
+                                <div class="info-cell"><label>Contact</label><span><?= esc_html($g['phone'] ?: 'N/A') ?></span></div>
+                                <div class="info-cell"><label>Gender/Age</label><span><?= $g['gender'] ?> (<?= $g['age'] ?> Yrs)</span></div>
+                                <div class="info-cell"><label>Address</label><span><?= esc_html($g['address']) ?></span></div>
+                            </div>
+                            
+                            <?php if(!empty($g['nid'])): ?>
+                                <a href="<?= wp_get_attachment_url($g['nid']) ?>" target="_blank" class="id-doc-link">
+                                    <span class="dashicons dashicons-id"></span> View Identity Document
+                                </a>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+
+                <span class="section-label" style="margin-top:20px;">Stay Information</span>
+                <div class="guest-info-grid" style="grid-template-columns: repeat(3, 1fr);">
+                    <div class="info-cell"><label>Arrival</label><span><?= date('F j, Y', strtotime($checkin)) ?></span></div>
+                    <div class="info-cell"><label>Departure</label><span><?= date('F j, Y', strtotime($checkout)) ?></span></div>
+                    <div class="info-cell"><label>Duration</label><span><?= $nights ?> Luxury Night(s)</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="ihb-sidebar-wrap">
+            <div class="summary-box">
+                <h3 class="summary-title">Financial Summary</h3>
+                
+                <div class="sum-row">
+                    <span>Base Rate</span>
+                    <strong>৳<?= number_format($room_price) ?></strong>
+                </div>
+                <div class="sum-row">
+                    <span>Stay Duration</span>
+                    <strong>x <?= $nights ?></strong>
+                </div>
+                <div class="sum-row">
+                    <span>Taxes & Fees</span>
+                    <strong>Incl.</strong>
+                </div>
+
+                <div class="sum-row total">
+                    <span style="font-size:12px; font-weight:700; color:var(--ihb-slate);">TOTAL</span>
+                    <span>৳<?= number_format($total_bill) ?></span>
+                </div>
+
+                <div class="payment-status-badge">
+                    <span class="dashicons dashicons-shield"></span>
+                    <div>
+                        <div style="text-transform:uppercase; font-size:10px;">Payment via <?= esc_html($method) ?></div>
+                        Settled & Verified
+                    </div>
+                </div>
+
                 <?php if($method !== 'cash'): ?>
-                    <div style="margin-top:15px; border-top:1px solid #eee; padding-top:15px; font-size:12px;">
-                        <div style="margin-bottom:5px;"><strong>Account:</strong> <?= esc_html($mfs_acc) ?></div>
-                        <div><strong>Transaction ID:</strong> <code style="background:#fff; padding:2px 5px; border:1px solid #ddd;"><?= esc_html($mfs_trx) ?></code></div>
+                    <div style="margin-top:25px; font-size:11px; color:var(--ihb-slate); background:#fdfdfd; padding:15px; border-radius:12px; border:1px solid #f1f5f9;">
+                        <strong>MFS TRN:</strong> <?= esc_html($mfs_trx) ?><br>
+                        <strong>SENDER:</strong> <?= esc_html($mfs_acc) ?>
                     </div>
                 <?php endif; ?>
+
+                <p style="font-size:10px; color:#cbd5e1; text-align:center; margin-top:30px;">
+                    This is an electronically generated statement.<br>© <?= date('Y') ?> Infinity Hotel Management.
+                </p>
             </div>
-            
-            <p style="text-align:center; font-size:11px; color:#94a3b8; margin-top:20px;">System Generated Document</p>
         </div>
     </div>
 </div>

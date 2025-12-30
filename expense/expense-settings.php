@@ -46,8 +46,7 @@ $paid_to = get_option('ihb_paid_to_list', ['Electric Board', 'Local Market', 'St
     .btn-remove:hover { background: #f43f5e; color: #fff; }
 
     /* Success Toast */
-    .ihb-toast { position: fixed; top: 60px; right: 30px; background: #fff; border-left: 4px solid #10b981; padding: 16px 25px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); z-index: 1000; animation: slideIn 0.4s ease; }
-    @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+    .ihb-toast { position: fixed; top: 60px; right: 30px; background: #fff; border-left: 4px solid #10b981; padding: 16px 25px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); z-index: 1000; }
     .spin { animation: spin 1s linear infinite; display: inline-block; }
     @keyframes spin { 100% { transform: rotate(360deg); } }
 </style>
@@ -64,12 +63,12 @@ $paid_to = get_option('ihb_paid_to_list', ['Electric Board', 'Local Market', 'St
     <?php wp_nonce_field('ihb_expense_settings_secure', 'ihb_nonce'); ?>
     <input type="hidden" name="ihb_save_expense_settings_action" value="1">
 
-    <div class="ihb-header">
+    <div class="ihb-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
         <div>
-            <h2>Accounting Settings</h2>
-            <p style="color: #64748b;">Configure global lists for your expense management.</p>
+            <h2 style="margin:0; font-weight:800;">Accounting Settings</h2>
+            <p style="margin:5px 0 0; color: #64748b;">Configure global lists for your expense management.</p>
         </div>
-        <button type="submit" id="save-btn-top" class="ihb-btn-gold" style="min-width: 180px;">
+        <button type="submit" id="save-btn-top" class="ihb-btn-gold" style="min-width: 200px; padding: 12px 24px; border-radius: 10px; font-weight: 700; border: none; cursor: pointer;">
             Save Configuration
         </button>
     </div>
@@ -139,7 +138,8 @@ function addRow(containerId, inputName) {
 
 document.getElementById('ihb-settings-form').onsubmit = function() {
     const btn = document.getElementById('save-btn-top');
-    btn.innerHTML = '<span class="dashicons dashicons-update spin"></span> Saving...';
+    btn.innerHTML = '<span class="dashicons dashicons-update spin" style="margin-top:4px;"></span> Synchronizing...';
     btn.style.opacity = '0.7';
+    btn.style.pointerEvents = 'none';
 };
 </script>
