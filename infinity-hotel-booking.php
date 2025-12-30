@@ -21,7 +21,8 @@ add_action('init', function() {
             'show_ui'     => true, 
             'supports'    => ['title', 'editor', 'thumbnail'],
             'has_archive' => false,
-            'rewrite'     => false
+            'rewrite'     => false,
+            'show_in_menu'=> false,
         ]);
     }
 });
@@ -56,7 +57,7 @@ function ihb_master_render() {
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&display=swap');
         
         :root { 
-            --gold: #D4AF37; 
+            --gold: #c19b76; 
             --gold-light: #F4E07D;
             --gold-dark: #B8860B; 
             --bg: #F4F7F6; 
@@ -175,9 +176,19 @@ function ihb_master_render() {
 }
 
 // 5. ASSETS & MEDIA
-add_action('admin_enqueue_scripts', function() {
+add_action('admin_enqueue_scripts', function($hook) {
+    // OPTIONAL: Only load on your specific plugin page to keep WP fast
+    // if (strpos($hook, 'infinity-hotel') === false) return;
+
     wp_enqueue_media();
-    // Enqueue DataTables for the Ledger
-    wp_enqueue_script('datatables', 'https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js', array('jquery'), null, true);
+
+    // DataTables CSS
     wp_enqueue_style('datatables-css', 'https://cdn.datatables.net/1.10.25/css/jquery.dataTables.min.css');
+
+    // DataTables JS (depends on jQuery)
+    wp_enqueue_script('datatables', 'https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js', array('jquery'), null, true);
+
+    // Custom CSS for Luxury Gold Theme
+    // If you have a style.css file, enqueue it here:
+    // wp_enqueue_style('ihb-luxury-style', plugin_dir_url(__FILE__) . 'assets/style.css');
 });
